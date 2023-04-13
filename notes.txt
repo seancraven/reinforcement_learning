@@ -1,0 +1,41 @@
+
+Where the state action-value function $\mathcal{Q}: \mathcal{S} \times \mathcal{A} \rightarrow \mathbb{R}$,
+$$
+q(s, a) = \vec{\phi}(s, a)^T \vec{w}. 
+$$
+In this representation we may represent any value function, as there is a weight associated with each $(s, a)$ tuple. as such the optimal value function must be in our hypothesis space $J^* \in \mathcal{F}_w$. Where $\mathcal{F}_w = \{\vec{\phi}(s, a)^T \vec{w} | \forall \vec{w} \in \mathbb{R}^{|\mathcal{A}| \times |\mathcal{S}|}\}$ is the hypothesis class of our approximations. 
+
+
+Starting with the result from Tsitsiklis & Van Roy 1997 on the convergence of linear approximations with a weight update of; 
+$$
+w_{t+1} = w_t + \alpha_t \delta_t \phi(s_t, a_t)
+$$
+They demonstrate that with a projection operator $\Pi$, which takes the form,
+$$
+\Pi \val = \argmin_w || \val - J^* ||^2_\mu = \val^*
+$$
+Where $J^*$ is, the optimal value function.  
+If $\sum_{t=0}^{\infty} \alpha_t = \infty$ and $\sum_{t=0}^\infty \alpha_t^2 < \infty$, and the Markov chain is irreducable and aperiodic, then the linear update converges, with the below bounds;
+$$
+|| \val^* - J^* ||_{2, \mu} \leq \frac{1}{1 - \gamma} \inf || \Pi \val - J^*||_{2, \mu}
+$$
+In the case where $J^* \in \mathcal{F}_w$ then the right-hand side is zero and in the limit weight updates converge to the optimal value function.
+
+However, because we lack knowledge of the transition dynamics $p$, To prove convergence of the above weight update rule to $J^*$ the projection of the approximate projection operator $\tilde{\Pi}$ must be equal to $J^*$. 
+$$
+\Pi \val = \sum_{a \in \A, s \in \S} \mu(s, a) (J^*(s, a) - \val)^2  
+$$
+ First, we define the steady state probability of the state action combination $\mu P = \mu$. This can be approximated without the dynamics, using a Monte-Carlo estimate 
+$$
+ \sum_{R} \frac{\delta(S_t = s, A_t = a)}{|R|} = \tilde{\mu}(s, a). 
+$$ 
+$$
+\lim_{|R| \rightarrow \infty} \tilde{\mu} = \mu
+$$
+Taking two-step experience, $\tau_2$ from the replay buffer $R$ of the form $(s_t, a_t, s_{t+1}, a_{t+1}, s_{t+2})$, we form an approximate projection of;
+$$
+\tilde{\Pi} \val = \frac{1}{N}\sum_{\tau_2 \sim \mu}^{N} \tilde{\mu}(s, a) \delta_t(s, a)^2
+$$
+$$
+\tilde{\Pi} \val = \mathbb{E}_R \left[ \tilde{\mu}(s, a)(r_t + \gamma r_{t+1} + \gamma^2 \max_a q(s_{t+2}, a) - q(s_t, a_t) )^2 \right] 
+$$
